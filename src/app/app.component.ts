@@ -1,30 +1,30 @@
 import { Component, OnInit } from '@angular/core';
+import { TimeService } from './shared/time.service';
 import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit  {
-  time: string = '';
-  targetTime = dayjs().hour(19).minute(5).second(0).millisecond(0);
-  diff: number = 0;
+export class AppComponent implements OnInit {
+  public time: string = '';
+  public currentTime: string = '';
+  public targetTime: string = '';
 
-  getTime(time: number = 0): string {
-  	return dayjs(time).format('hh:mm:ss:SSS');
-  }
-	
-  updateTime(): string {
-    const diff = this.targetTime.diff(dayjs(), 'second');
-    
-  	return diff.toString();
-  }
+  constructor(private timeService: TimeService) {}
 
-  ngOnInit() {
-  	setInterval(() => {
-  	  // this.diff = dayjs().diff(this.targetTime);
-  	  this.time = this.getTime();
-  	}, 1);
+  public ngOnInit() {
+    setInterval(() => {
+      const nextTarget = this.timeService.getNextTarget();
+      this.time = dayjs
+        .utc(nextTarget.diff())
+        .format(TimeService.timeFormatWithMs);
+      this.targetTime = nextTarget.format(TimeService.timeFormat);
+      this.currentTime = dayjs().format(TimeService.timeFormat);
+    });
   }
 }
